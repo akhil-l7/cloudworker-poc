@@ -1,0 +1,22 @@
+{
+  "name": "winter-hill-8334",
+  "main": "src/index.js",
+  "workers_dev": true,
+  "preview_urls": false,
+  "compatibility_date": "2026-01-07",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
+  }
+}
