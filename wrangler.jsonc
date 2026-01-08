@@ -1,5 +1,5 @@
 {
-  "name": "winter-hill-8334",
+  "name": "poc-blog",
   "main": "src/index.js",
   "workers_dev": true,
   "preview_urls": false,

@@ -1,36 +1,64 @@
-// Cloudflare Worker to handle Prismic webhook transform and trigger github CI build
-
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
 
 async function handleRequest(request) {
-  if (request.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 })
+  const OWNER = "akhil-l7"
+  const REPO = "next-blogpoc"
+  const WORKFLOW_ID = "nextjs.yml"
+  const GITHUB_WORKFLOW_URL = `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`
+
+  // Get the super secret header
+  const passCode = request.headers.get('x-super-secret')
+
+  if (!passCode || passCode !== SUPER_SECRET_PASSCODE) {
+    const noEntryText = "anuvadham ella - no entry"
+    return new Response(noEntryText, { status: 403 });
   }
 
-  // Retrieve the signature from the Prismic webhook 
-  const signature = request.headers.get('x-prismic-signature')
-  console.log(request.headers);
-  // Optionally, you can verify the signature here if you set it in Prismic
-  // const expectedSignature = 'super-secret-blog-0042' // Replace with your actual secret key
+  // Only accept POST requests
+  if (request.method !== 'POST') {
+    return new Response('Only POST requests are allowed', { status: 405 })
+  }
 
-  // if (signature !== expectedSignature) {
-  //   return new Response('Invalid signature', { status: 401 })
-  // }
-  return new Response('debug');
-  // try {
-  //   // Trigger the Vercel build hook
-  //   const vercelBuildUrl = 'https://api.vercel.com/v1/integrations/deploy/your-build-hook-id' // Replace with your Vercel build hook URL
-  //   const response = await fetch(vercelBuildUrl, { method: 'POST' })
+  try {
+    const githubToken = request?.headers?.get('Authorization')?.split(' ')[1]
+    const ref = request?.headers?.get('x-git-branch') || 'master'
 
-  //   if (response.ok) {
-  //     return new Response('Build triggered successfully', { status: 200 })
-  //   } else {
-  //     return new Response('Failed to trigger build', { status: 500 })
-  //   }
-  // } catch (error) {
-  //   console.error('Error:', error)
-  //   return new Response('Internal Server Error', { status: 500 })
-  // }
+    // Prepare your custom body for GitHub API
+    const githubBody = {
+      ref
+    }
+
+    // If no token is provided, return an error
+    if (!githubToken) {
+      return new Response('Authorization token is required', { status: 400 })
+    }
+
+    // Make the request to GitHub API
+    const githubResponse = await fetch(GITHUB_WORKFLOW_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${githubToken}`,
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'akhil-l7'
+      },
+      body: JSON.stringify(githubBody),
+    })
+
+    // Check if the request was successful
+    if (!githubResponse.ok) {
+      return new Response('GitHub API request failed', { status: githubResponse.status })
+    }
+
+    // Return the GitHub API response as the response to the client
+    return new Response(JSON.stringify({ message: 'success' }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+  } catch (error) {
+    return new Response('Error processing the request', { status: 500 })
+  }
 }
