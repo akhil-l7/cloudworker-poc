@@ -35,6 +35,8 @@ async function handleRequest(request) {
       return new Response('Authorization token is required', { status: 400 })
     }
 
+    await delay(10000) // 10s delay before calling github.
+
     // Make the request to GitHub API
     const githubResponse = await fetch(GITHUB_WORKFLOW_URL, {
       method: 'POST',
@@ -61,4 +63,9 @@ async function handleRequest(request) {
   } catch (error) {
     return new Response('Error processing the request', { status: 500 })
   }
+}
+
+// delay function to workaround the issue when newly published documents are not found via api instantly at github build time. 
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
