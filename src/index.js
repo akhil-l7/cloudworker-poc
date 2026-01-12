@@ -34,7 +34,7 @@ async function handleRequest(request) {
     if (!githubToken) {
       return new Response('Authorization token is required', { status: 400 })
     }
-
+    // TODO: proper body parse and check if newly created document is available via api. 
     await delay(10000) // 10s delay before calling github.
 
     // Make the request to GitHub API
