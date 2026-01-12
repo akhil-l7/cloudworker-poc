@@ -1,5 +1,8 @@
 addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
+  event.respondWith(
+    new Response("OK", { status: 200 })
+  );
+  event.waitUntil(handleRequest(event.request))
 })
 
 async function handleRequest(request) {
@@ -35,7 +38,7 @@ async function handleRequest(request) {
       return new Response('Authorization token is required', { status: 400 })
     }
     // TODO: proper body parse and check if newly created document is available via api. 
-    await delay(10000) // 10s delay before calling github.
+    await delay(5000) // 5s delay before calling github.
 
     // Make the request to GitHub API
     const githubResponse = await fetch(GITHUB_WORKFLOW_URL, {
