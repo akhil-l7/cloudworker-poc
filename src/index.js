@@ -25,8 +25,9 @@ async function handleRequest(request) {
   }
 
   try {
-    const githubToken = request?.headers?.get('Authorization')?.split(' ')[1]
-    const ref = request?.headers?.get('x-git-branch') || 'master'
+    const githubToken = request?.headers?.get('Authorization');
+    const hasBearer = String(githubToken).includes('Bearer');
+    const ref = request?.headers?.get('x-git-branch') || 'master';
 
     // Prepare your custom body for GitHub API
     const githubBody = {
@@ -44,7 +45,7 @@ async function handleRequest(request) {
     const githubResponse = await fetch(GITHUB_WORKFLOW_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${githubToken}`,
+        'Authorization': hasBearer ? githubToken : `Bearer ${githubToken}`,
         'Accept': 'application/vnd.github+json',
         'User-Agent': 'akhil-l7'
       },
